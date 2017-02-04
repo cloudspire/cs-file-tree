@@ -2,6 +2,7 @@ var ls = require('node-dir');
 var __ = require('underscore');
 
 function getList(start, callback) {
+	start = ensurePathFormat(start);
 	var folders, files;
 	var finished = __.after(2, function() {
 		callback(null, folders.concat(files));
@@ -17,6 +18,7 @@ function getList(start, callback) {
 }
 
 function getObject(start, callback) {
+	start = ensurePathFormat(start);
 	var folders, files;
 	var finished = __.after(2, function() {
 		//callback(null, generateDirectory(folders));
@@ -35,6 +37,13 @@ function getObject(start, callback) {
 
 module.exports.getList = getList;
 module.exports.getObject = getObject;
+
+//make sure path is correct format
+function ensurePathFormat(path) {
+	var chr = path.substring(path.length - 1);
+	if (chr != '/') { path += '/'; }
+	return path;
+}
 
 //list all directories (recursive)
 function getAllDirectories(start) {
@@ -74,29 +83,41 @@ function generateDirectory(array) {
 
 //removes predicate string from each item in list
 function mapRelativeNames(list, predicate) {
+	var tmp = getFileParts(predicate).pop();
     return list.map((item) => {
-        return item.replace(predicate, '');
+        return tmp + '/' + item.replace(predicate, '');
     });
+}
+
+//returns an array representing a files path
+function getFileParts(file) {
+	return file.split('/').filter((val) => { return val != ""; })
 }
 
 //generate tree view
 function buildFolderStructure(list, dir) {
-	function create_path(path, current_dir) {
-		var parts = path.split('/').filter((val) => {return val != "";});
-		if (parts.length == 1) {
-			if (current_dir['_files_'] == null) { current_dir['_files_'] = []; }
-			current_dir['_files_'].push(parts[0]);
-		} else {
-			var next = parts[0];
-			parts.shift();
-			var new_path = parts.reduce(reduce_path, '');
-			create_path(new_path, current_dir[next]);
-		}
-	}
 	for (var i = 0; i < list.length; i++) {
-		create_path(list[i], dir);
+		//remove first part of path (this is the current_dir)
+		var parts = getFileParts(list[i]);
+		parts.shift();
+		//call recursive algorthm to add path object to tree
+		create_path(parts.reduce(reduce_path, ''), dir);
 	}
 	return dir;
+}
+
+//recursive algorithm to buld folder structures
+function create_path(path, current_dir) {
+	var parts = getFileParts(path);
+	if (parts.length == 1) {
+		if (current_dir['_files_'] == null) { current_dir['_files_'] = []; }
+		current_dir['_files_'].push(parts[0]);
+	} else {
+		var next = parts[0];
+		parts.shift();
+		var new_path = parts.reduce(reduce_path, '');
+		create_path(new_path, current_dir[next]);
+	}
 }
 
 //turns an array of folder parts into path
