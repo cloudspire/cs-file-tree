@@ -1,10 +1,10 @@
 {
   "name": "cs-file-tree",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Tree structure representation of a folder structure / file system.",
   "main": "index.js",
   "scripts": {
-    "test": "node test.js"  
+    "test": "node test.js"
   },
   "keywords": [
     "Node",
