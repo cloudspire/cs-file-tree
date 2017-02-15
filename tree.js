@@ -73,7 +73,7 @@ function generateDirectory(array) {
         tmp = array[i].split('/').slice(1);
         for (var j = 0; j < tmp.length; j++) {
             if (current[tmp[j]] == null) {
-                current[tmp[j]] = {'...': {}, '_files_': []};
+                current[tmp[j]] = {'_files_': []};
             }
             current = current[tmp[j]];
         }
